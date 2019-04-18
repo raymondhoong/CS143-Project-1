@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS project1.song (
 CREATE TABLE IF NOT EXISTS project1.token (
         song_id                         integer,
         word                            varchar(110),
-        word_freq                       smallint,
+        word_freq                       smallint NOT NULL,
         PRIMARY KEY (song_id, word),
         FOREIGN KEY (song_id) REFERENCES project1.song(song_id)
 );
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS project1.token (
 CREATE TABLE IF NOT EXISTS project1.tfidf (
         song_id                         integer,
         word                            varchar(110),
-        word_tfidf                      decimal(3,2) NOT NULL,
+        word_tfidf                      double precision NOT NULL,
         PRIMARY KEY (song_id, word),
         FOREIGN KEY (song_id, word) REFERENCES project1.token(song_id, word),
         FOREIGN KEY (song_id) REFERENCES project1.song(song_id)
