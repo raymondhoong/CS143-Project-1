@@ -1,5 +1,5 @@
 DROP SCHEMA IF EXISTS project1 CASCADE;
-CREATE SCHEMA IF NOT EXISTS project1;
+CREATE SCHEMA project1;
 
 CREATE TABLE IF NOT EXISTS project1.artist (
         artist_id                       smallint,
