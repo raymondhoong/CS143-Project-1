@@ -1,3 +1,15 @@
-\COPY project1.artist(artist_id, artist_name) FROM '/home/cs143/data/artist.csv' DELIMITER ',' QUOTE '"' CSV;
-\COPY project1.song(song_id, artist_id, song_name, page_link) FROM '/home/cs143/data/song.csv' DELIMITER ',' QUOTE '"'  CSV;
-\COPY project1.token(song_id, token, count) FROM '/home/cs143/data/token.csv' DELIMITER ',' QUOTE '"' CSV;
+CREATE MATERIALIZED VIEW tfidf AS
+SELECT
+    song_id, token,
+    (count * (log((SELECT COUNT(*) FROM project1.song)::float / dfi)))::float AS score
+FROM (
+    SELECT L.song_id, L.token, L.count, R.dfi
+    FROM (
+        SELECT
+            token, COUNT(*) as dfi
+        FROM project1.token
+        GROUP BY token  
+    ) R
+    JOIN project1.token L
+    ON L.token = R.token     
+) foo;
