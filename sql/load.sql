@@ -1,4 +1,4 @@
-CREATE MATERIALIZED VIEW tfidf AS
+CREATE MATERIALIZED VIEW project1.tfidf AS
 SELECT
     song_id, token,
     (count * (log((SELECT COUNT(*) FROM project1.song)::float / dfi)))::float AS score
