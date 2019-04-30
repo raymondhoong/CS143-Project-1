@@ -44,7 +44,7 @@ def search(query, query_type):
     num_tokens = len(tokens)
     
     if num_tokens == 0:
-        raise ValueError, "No results! Must enter a query!"
+        raise ValueError("No results! Must enter a query!")
     
     col = "song_name, artist_name"
     
@@ -71,6 +71,32 @@ def search(query, query_type):
     4. Write queries so that they are not vulnerable to SQL injections.
     5. The parameters passed to the search function may need to be changed for 1B. 
     """
+
+    try:
+        connection = psycopg2.connect(user="cs143",
+                                  password="cs143",
+                                  host="localhost",
+                                  database="searchengine")
+    except psycopg2.Error as e:
+        print(e.pgerror)
+
+    try:
+        cursor = connection.cursor()
+    except psycopg2.Error as e:
+        print(e.pgerror)
+
+    try:
+        cursor.execute(sql_query)
+    except psycopg2.Error as e:
+        print(e.pgerror)
+
+    rows = []
+    row = cursor.fetchall()
+    for result in row:
+        rows.append(result)
+
+    connection.close()
+    
     rows = []
     return rows
 
