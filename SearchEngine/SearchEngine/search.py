@@ -46,21 +46,27 @@ def search(query, query_type):
     if num_tokens == 0:
         raise ValueError("No results! Must enter a query!")
     
-    col = "song_name, artist_name"
+    col = "song_name, artist_name, Y.page_link"
     
-    table = """SELECT DISTINCT song_id
-        FROM project1.token WHERE token = '{first}'""".format(first = tokens[0])
+    table = """SELECT L.song_id, SUM(R.score) as score
+        FROM project1.token L
+        JOIN project1.tfidf R
+        ON L.song_id = R.song_id AND L.token = R.token
+        WHERE L.token = '{first}'""".format(first = tokens[0])
 
     for x in range(1, num_tokens):
-        table + " OR token = '{cur_token}'".format(cur_token = tokens[x])
+        table = table + " OR L.token = '{cur_token}'".format(cur_token = tokens[x])
+
+    table = table + " GROUP BY L.song_id"
 
     if query_type == "AND":
-        table + " GROUP BY song_id HAVING COUNT(song_id) = {count}".format(count = num_tokens)
+        table + " HAVING COUNT(song_id) = {count}".format(count = num_tokens)
     
-    join_clause = """JOIN project1.song Y ON X.song_id = Y.song_id
-        JOIN project1.artist Z ON Y.artist_id = Z.artist_id"""
+    end_clause = """JOIN project1.song Y ON X.song_id = Y.song_id
+        JOIN project1.artist Z ON Y.artist_id = Z.artist_id
+        ORDER BY score DESC"""
     
-    sql_query = "SELECT {c} FROM ({r}) X {end};".format(c = col, r = table, end = join_clause)
+    sql_query = "SELECT {c} FROM ({r}) X {end};".format(c = col, r = table, end = end_clause)
 
     """TODO
     Your code will go here. Refer to the specification for projects 1A and 1B.
