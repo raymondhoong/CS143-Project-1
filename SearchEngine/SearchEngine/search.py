@@ -41,6 +41,7 @@ def search(query, query_type):
     
     tokens = _get_tokens(query)
     
+    qtype = query_type.upper()
     num_tokens = len(tokens)
     
     if num_tokens == 0:
@@ -52,21 +53,22 @@ def search(query, query_type):
         FROM project1.token L
         JOIN project1.tfidf R
         ON L.song_id = R.song_id AND L.token = R.token
-        WHERE L.token = '{first}'""".format(first = tokens[0])
+        WHERE L.token = LOWER('{first}')""".format(first = tokens[0])
 
     for x in range(1, num_tokens):
-        table = table + " OR L.token = '{cur_token}'".format(cur_token = tokens[x])
+        table = table + " OR L.token = LOWER('{cur_token}')".format(cur_token = tokens[x])
 
     table = table + " GROUP BY L.song_id"
 
-    if query_type == "AND":
-        table + " HAVING COUNT(song_id) = {count}".format(count = num_tokens)
+    if qtype == "AND":
+        table = table + " HAVING COUNT(L.song_id) = {count}".format(count = num_tokens)
     
     end_clause = """JOIN project1.song Y ON X.song_id = Y.song_id
         JOIN project1.artist Z ON Y.artist_id = Z.artist_id
         ORDER BY score DESC"""
     
     sql_query = "SELECT {c} FROM ({r}) X {end};".format(c = col, r = table, end = end_clause)
+    print(sql_query)
 
     """TODO
     Your code will go here. Refer to the specification for projects 1A and 1B.
