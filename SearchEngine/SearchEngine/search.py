@@ -103,7 +103,6 @@ def search(query, query_type):
 
     connection.close()
     
-    rows = []
     return rows
 
 if __name__ == "__main__":
