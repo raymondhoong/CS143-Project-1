@@ -12,6 +12,12 @@ def dosearch():
     query = request.args['query']
     qtype = request.args['query_type']
 
+    """multidict = request.args.get()
+    for value in multidict:
+        print(value)"""
+    
+    """print(query)
+    print(qtype)"""
     """
     TODO:
     Use request.args to extract other information
@@ -19,6 +25,9 @@ def dosearch():
     """
 
     search_results = search.search(query, qtype)
+
+    
+    
     return render_template('results.html',
             query=query,
             results=len(search_results),

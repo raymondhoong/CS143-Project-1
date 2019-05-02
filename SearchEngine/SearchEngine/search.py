@@ -38,7 +38,30 @@ def _get_tokens(query):
 
 
 def search(query, query_type):
-    
+    """TODO
+    Your code will go here. Refer to the specification for projects 1A and 1B.
+    But your code should do the following:
+    1. Connect to the Postgres database.
+    2. Graciously handle any errors that may occur (look into try/except/finally).
+    3. Close any database connections when you're done.
+    4. Write queries so that they are not vulnerable to SQL injections.
+    5. The parameters passed to the search function may need to be changed for 1B. 
+    """
+
+    try:
+        connection = psycopg2.connect(user="cs143",
+                                  password="cs143",
+                                  host="localhost",
+                                  database="searchengine")
+    except psycopg2.Error as e:
+        print(e.pgerror)
+
+    try:
+        cursor = connection.cursor()
+    except psycopg2.Error as e:
+        print(e.pgerror)
+
+        
     tokens = _get_tokens(query)
     
     qtype = query_type.upper()
@@ -66,20 +89,81 @@ def search(query, query_type):
     end_clause = """JOIN project1.song Y ON X.song_id = Y.song_id
         JOIN project1.artist Z ON Y.artist_id = Z.artist_id
         ORDER BY score DESC"""
-    
+
     sql_query = "SELECT {c} FROM ({r}) X {end};".format(c = col, r = table, end = end_clause)
-    print(sql_query)
 
-    """TODO
-    Your code will go here. Refer to the specification for projects 1A and 1B.
-    But your code should do the following:
-    1. Connect to the Postgres database.
-    2. Graciously handle any errors that may occur (look into try/except/finally).
-    3. Close any database connections when you're done.
-    4. Write queries so that they are not vulnerable to SQL injections.
-    5. The parameters passed to the search function may need to be changed for 1B. 
-    """
 
+    """START RAYMOND LIN
+    Make a unique materialized view name"""
+    view_name = ""
+    i = 0
+    while i != len(query):
+        if query[i] == ' ':
+            view_name += "_"
+        else:
+            view_name += query[i]
+        i += 1
+
+    view_name += "_query"
+
+    """Delete existing views that aren't equal to current view"""
+    view_lookup_query = "SELECT relname FROM pg_class WHERE relname NOT LIKE 'tfidf' AND relname NOT LIKE '{var}' AND relkind LIKE 'm';".format(var = view_name)
+    print(view_lookup_query)
+    try:
+        cursor.execute(view_lookup_query)
+    except psycopg2.Error as e:
+        print(e.pgerror)
+
+    views = cursor.fetchall()
+    for name in views:
+        print(name[0])
+        if name[0].strip('\)\(') != view_name:
+            delete_query = "DROP MATERIALIZED VIEW IF EXISTS project1.{var};".format(var = name[0].strip('\)\('))
+            print(delete_query)
+            try:
+                cursor.execute(delete_query)
+            except psycopg2.Error as e:
+                print(e.pgerror)
+            
+    """Check if materialized view already exists"""
+    check_query = "SELECT 1 FROM pg_class WHERE relname LIKE '{var}';".format(var = view_name) 
+
+    try:
+        print(check_query)
+        cursor.execute(check_query)
+    except psycopg2.Error as e:
+        print(e.pgerror)
+
+    value = cursor.fetchone()
+    connection.commit()
+    connection.close()
+    if value is not None and value[0] == 1:
+        print("view was found!")
+    else:
+        print("view not found - creating one now")
+        materialized_query = "CREATE MATERIALIZED VIEW IF NOT EXISTS project1.{name} AS {query};".format(name = view_name, query = sql_query)    
+        print(materialized_query)
+        try:
+            connection = psycopg2.connect(user="cs143",
+                              password="cs143",
+                              host="localhost",
+                              database="searchengine")
+        except psycopg2.Error as e:
+            print(e.pgerror)
+        
+        try:
+            cursor = connection.cursor()
+        except psycopg2.Error as e:
+            print(e.pgerror)
+
+        try:
+            cursor.execute(materialized_query)
+        except psycopg2.Error as e:
+            print(e.pgerror)
+
+        connection.commit()
+        connection.close()
+        
     try:
         connection = psycopg2.connect(user="cs143",
                                   password="cs143",
@@ -87,14 +171,15 @@ def search(query, query_type):
                                   database="searchengine")
     except psycopg2.Error as e:
         print(e.pgerror)
-
+    
     try:
         cursor = connection.cursor()
     except psycopg2.Error as e:
         print(e.pgerror)
 
+    short_query = "SELECT * FROM project1.{name};".format(name = view_name)
     try:
-        cursor.execute(sql_query)
+        cursor.execute(short_query)
     except psycopg2.Error as e:
         print(e.pgerror)
 
