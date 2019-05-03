@@ -103,14 +103,12 @@ def search(query_type, offset, query):
     Make a unique materialized view name"""
     view_name = query_type
     i = 0
-    while i != len(query):
-        if query[i] == ' ':
-            view_name += "_"
-        else:
-            view_name += query[i]
+    while i != len(tokens):
+        view_name += "_" + tokens[i]
         i += 1
 
     view_name += "_query"
+    print("View name: {view}".format(view = view_name))
 
     """Delete existing views that aren't equal to current view"""
     view_lookup_query = "SELECT relname FROM pg_class WHERE relname NOT LIKE 'tfidf' AND relname NOT LIKE '{var}' AND relkind LIKE 'm';".format(var = view_name)
