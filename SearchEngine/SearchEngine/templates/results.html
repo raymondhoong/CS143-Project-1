@@ -27,6 +27,8 @@
 		{% for result in search_results %}
 		<p><strong><a href="http://www.lyricsfreak.com{{ result[2] }}" target="_blank">{{ result[0] }}</a></strong> <em>by</em> {{ result[1] }} </p>
 		{% endfor %}
+
+		<p><strong>Results {{x}}-{{y}} of {{results}}</strong></p> 
 		{% else %}
 
 		<p><strong>No results for </strong>{{query}}</p>
