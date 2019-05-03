@@ -121,7 +121,9 @@ def search(query_type, offset, query):
     print("View name: {view}".format(view = view_name))
 
     """Delete existing views that aren't equal to current view"""
-    view_lookup_query = "SELECT relname FROM pg_class WHERE relname NOT LIKE 'tfidf' AND relname NOT LIKE '{var}' AND relkind LIKE 'm';".format(var = view_name)
+    view_lookup_query = sql.Composed([sql.SQL("SELECT relname FROM pg_class WHERE relname NOT LIKE 'tfidf' AND relname NOT LIKE "),
+                                      sql.Literal(view_name),
+                                      sql.SQL("AND relkind LIKE 'm';")])
     print(view_lookup_query)
     try:
         cursor.execute(view_lookup_query)
