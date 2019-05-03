@@ -37,7 +37,7 @@ def _get_tokens(query):
 
 
 
-def search(query, query_type, offset):
+def search(query_type, offset, query):
     """TODO
     Your code will go here. Refer to the specification for projects 1A and 1B.
     But your code should do the following:
@@ -93,6 +93,7 @@ def search(query, query_type, offset):
 
     sql_query = "SELECT {c} FROM ({r}) X {end};".format(c = col, r = table, end = end_clause)
 
+    print(sql_query)
 
     """START RAYMOND LIN
     Make a unique materialized view name"""
@@ -205,7 +206,7 @@ def search(query, query_type, offset):
 
 if __name__ == "__main__":
     if len(sys.argv) > 2:
-        result = search(' '.join(sys.argv[2:-2]), sys.argv[1].lower(), sys.argv[-1])
+        result = search(sys.argv[1].lower(), sys.argv[2], ' '.join(sys.argv[3:]))
         print(result)
     else:
         print("USAGE: python3 search.py [or|and] term1 term2 ...")

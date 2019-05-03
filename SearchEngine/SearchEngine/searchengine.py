@@ -28,7 +28,7 @@ def dosearch():
     if previous < 1:
         previous = 1
 
-    search_results = search.search(query, qtype, offset)
+    search_results = search.search(qtype, offset, query)
 
     length = int(search_results[-1][0])
     del search_results[-1]
