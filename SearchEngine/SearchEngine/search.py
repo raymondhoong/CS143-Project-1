@@ -32,7 +32,7 @@ def _get_tokens(query):
         cleaned_token = _remove_punc(token)
         if cleaned_token:
             if "'" in cleaned_token:
-                cleaned_token = cleaned_token.replace("'", "''")
+                cleaned_token = cleaned_token.replace("'", "'")
             rewritten_query.append(cleaned_token)
     return rewritten_query
 
@@ -67,6 +67,7 @@ def search(query_type, offset, query):
     tokens = _get_tokens(query)
     tokens = [t.lower() for t in tokens]
     num_tokens = len(tokens)
+    print(tokens)
     
     if num_tokens == 0:
         raise ValueError("No results! Must enter a query!")
