@@ -37,7 +37,7 @@ def _get_tokens(query):
 
 
 
-def search(query, query_type):
+def search(query, query_type, offset):
     """TODO
     Your code will go here. Refer to the specification for projects 1A and 1B.
     But your code should do the following:
@@ -177,7 +177,7 @@ def search(query, query_type):
     except psycopg2.Error as e:
         print(e.pgerror)
 
-    short_query = "SELECT * FROM project1.{name};".format(name = view_name)
+    short_query = "SELECT * FROM project1.{name} LIMIT 20 OFFSET {amount};".format(name = view_name, amount = offset)
     try:
         cursor.execute(short_query)
     except psycopg2.Error as e:
@@ -188,6 +188,15 @@ def search(query, query_type):
     for result in row:
         rows.append(result)
 
+    length_query = "SELECT COUNT(*) FROM project1.{name};".format(name = view_name)
+    try:
+        cursor.execute(length_query)
+    except psycopg2.Error as e:
+        print(e.pgerror)
+
+    length = cursor.fetchone()
+    rows.append(length)
+        
     connection.close()
     
     return rows
