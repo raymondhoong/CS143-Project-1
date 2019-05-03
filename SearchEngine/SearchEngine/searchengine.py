@@ -43,7 +43,8 @@ def dosearch():
             results=length,
             search_results=search_results,
             x=lower_bound,
-            y=upper_bound)
+            y=upper_bound,
+            page=page)
 
 @app.route("/", methods=["GET"])
 def index():
