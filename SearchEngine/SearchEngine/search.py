@@ -102,9 +102,19 @@ def search(query_type, offset, query):
     """START RAYMOND LIN
     Make a unique materialized view name"""
     view_name = query_type
+
+    """handling punctuation marks"""
+    print(query)
+
+    no_punc_query = query.translate(str.maketrans('', '', string.punctuation))
+    print(no_punc_query)
+
+    tokens_copy = _get_tokens(no_punc_query)
+    print(tokens_copy)
+    
     i = 0
-    while i != len(tokens):
-        view_name += "_" + tokens[i]
+    while i != len(tokens_copy):
+        view_name += "_" + tokens_copy[i]
         i += 1
 
     view_name += "_query"
