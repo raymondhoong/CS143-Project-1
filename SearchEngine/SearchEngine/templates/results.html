@@ -20,7 +20,7 @@
 				</form>
 			</div>
 		</div>
-
+    
 		{% if results > 0 %}
 		<p><strong>{{ results }} results for </strong>{{query}}</p>
 
@@ -28,8 +28,43 @@
 		<p><strong><a href="http://www.lyricsfreak.com{{ result[2] }}" target="_blank">{{ result[0] }}</a></strong> <em>by</em> {{ result[1] }} </p>
 		{% endfor %}
 		{% else %}
-
 		<p><strong>No results for </strong>{{query}}</p>
 		{% endif %}
+  
+    <style>
+    b {
+        text-decoration: none;
+        display: inline-block;
+        padding: 8px 16px;
+    }
+  
+    b:hover {
+        background-color: #ddd;
+        color: black;
+    }
+  
+    .previous {
+        background-color: #f1f1f1;
+        color: black;
+    }
+  
+    .next {
+        background-color: #4CAF50;
+        color: white;
+    }
+  
+    .round {
+        border-radius: 50%;
+    }
+    </style>
+    
+    
+
+    <div>
+                 <form action="{{ url_for('dosearch') }}" method="GET">
+        <b href="#" class="previous">&laquo; Previous</b>
+        <b href="#" class="next">Next &raquo;</b>
+    </div>
+
 	</body>
 </html>

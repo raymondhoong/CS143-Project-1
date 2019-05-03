@@ -11,6 +11,7 @@ app.debug = True
 def dosearch():
     query = request.args['query']
     qtype = request.args['query_type']
+    #page_no = request.args['page']
 
     """multidict = request.args.get()
     for value in multidict:
