@@ -65,6 +65,7 @@ def search(query, query_type, offset):
     tokens = _get_tokens(query)
     
     qtype = query_type.upper()
+    print(qtype)
     num_tokens = len(tokens)
     
     if num_tokens == 0:
@@ -95,7 +96,7 @@ def search(query, query_type, offset):
 
     """START RAYMOND LIN
     Make a unique materialized view name"""
-    view_name = ""
+    view_name = query_type
     i = 0
     while i != len(query):
         if query[i] == ' ':
@@ -204,7 +205,7 @@ def search(query, query_type, offset):
 
 if __name__ == "__main__":
     if len(sys.argv) > 2:
-        result = search(' '.join(sys.argv[2:]), sys.argv[1].lower())
+        result = search(' '.join(sys.argv[2:-2]), sys.argv[1].lower(), sys.argv[-1])
         print(result)
     else:
         print("USAGE: python3 search.py [or|and] term1 term2 ...")
