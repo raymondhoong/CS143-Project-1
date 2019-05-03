@@ -4,6 +4,7 @@ import psycopg2
 import re
 import string
 import sys
+from psycopg2 import sql
 
 _PUNCTUATION = frozenset(string.punctuation)
 
@@ -61,39 +62,42 @@ def search(query_type, offset, query):
     except psycopg2.Error as e:
         print(e.pgerror)
 
-        
-    tokens = _get_tokens(query)
-    
     qtype = query_type.upper()
-    print(qtype)
+
+    tokens = _get_tokens(query)
+    tokens = [t.lower() for t in tokens]
     num_tokens = len(tokens)
     
     if num_tokens == 0:
         raise ValueError("No results! Must enter a query!")
-    
-    col = "song_name, artist_name, Y.page_link"
-    
-    table = """SELECT L.song_id, SUM(R.score) as score
+
+    start_clause = sql.SQL("""SELECT song_name, artist_name, Y.page_link FROM (
+        SELECT L.song_id, SUM(R.score) as score
         FROM project1.token L
         JOIN project1.tfidf R
-        ON L.song_id = R.song_id AND L.token = R.token
-        WHERE L.token = LOWER('{first}')""".format(first = tokens[0])
+        ON L.song_id = R.song_id AND L.token = R.token""")
 
-    for x in range(1, num_tokens):
-        table = table + " OR L.token = LOWER('{cur_token}')".format(cur_token = tokens[x])
+    where_clause = sql.Composed([sql.SQL(" WHERE L.token = "), sql.Literal(tokens[0])])
+    for x in range(1,num_tokens):
+        where_clause = where_clause + sql.Composed([sql.SQL(" OR L.token = "), sql.Literal(tokens[x])])
 
-    table = table + " GROUP BY L.song_id"
+    group_clause = sql.SQL(" GROUP BY L.song_id")
+
+    and_clause = sql.Composed([sql.SQL(" HAVING COUNT(L.song_id) = "), sql.Literal(num_tokens)])
+
+    end_clause = sql.SQL("""
+    ) X JOIN project1.song Y ON X.song_id = Y.song_id
+        JOIN project1.artist Z ON Y.artist_id = Z.artist_id
+        ORDER BY score DESC""")
 
     if qtype == "AND":
-        table = table + " HAVING COUNT(L.song_id) = {count}".format(count = num_tokens)
+        sql_query = sql.Composed([start_clause, where_clause, group_clause, and_clause, end_clause])
+    else:
+        sql_query = sql.Composed([start_clause, where_clause, group_clause, end_clause])
+
     
-    end_clause = """JOIN project1.song Y ON X.song_id = Y.song_id
-        JOIN project1.artist Z ON Y.artist_id = Z.artist_id
-        ORDER BY score DESC"""
-
-    sql_query = "SELECT {c} FROM ({r}) X {end};".format(c = col, r = table, end = end_clause)
-
-    print(sql_query)
+    print(sql_query.as_string(cursor))
+    print('\n')
 
     """START RAYMOND LIN
     Make a unique materialized view name"""
@@ -139,11 +143,12 @@ def search(query_type, offset, query):
     value = cursor.fetchone()
     connection.commit()
     connection.close()
+
     if value is not None and value[0] == 1:
         print("view was found!")
     else:
         print("view not found - creating one now")
-        materialized_query = "CREATE MATERIALIZED VIEW IF NOT EXISTS project1.{name} AS {query};".format(name = view_name, query = sql_query)    
+        materialized_query = "CREATE MATERIALIZED VIEW IF NOT EXISTS project1.{name} AS {query};".format(name = view_name, query = sql_query.as_string(cursor))
         print(materialized_query)
         try:
             connection = psycopg2.connect(user="cs143",
