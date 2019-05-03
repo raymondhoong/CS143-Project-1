@@ -28,13 +28,11 @@ def dosearch():
     if previous < 1:
         previous = 1
     
-    tokens = query[0]
-    
-    if len(tokens) > 1:
+    """if len(tokens) > 1:
         for x in range(1, len(query)):
-            tokens = tokens + "+{next_tk}".format(next_tk = query[x])
+            tokens = tokens + "+{next_tk}".format(next_tk = query[x])"""
     
-    url = "/search?query_type={x}&query={y}".format(x = qtype, y = tokens)
+    url = "/search?query_type={x}&query={y}".format(x = qtype, y = query)
 
 
     search_results = search.search(qtype, offset, query)
