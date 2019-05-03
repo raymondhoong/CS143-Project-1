@@ -9,6 +9,18 @@ app.debug = True
 
 @app.route('/search', methods=["GET"])
 def dosearch():
+<<<<<<< HEAD
+    query = request.args['query']
+    qtype = request.args['query_type']
+
+    """multidict = request.args.get()
+    for value in multidict:
+        print(value)"""
+    
+    """print(query)
+    print(qtype)"""
+=======
+>>>>>>> 6539dd7543ad5aaca58b3a432940ac639d6eb25e
     """
     TODO:
     Use request.args to extract other information
