@@ -32,15 +32,17 @@ def dosearch():
 
     length = int(search_results[-1][0])
     del search_results[-1]
-    upper_bound = ((offset + 1) * 20)
+
+    lower_bound = offset + 1
+    upper_bound = lower_bound + 19
     if upper_bound > length:
         upper_bound = length
-    
+
     return render_template('results.html',
             query=query,
             results=length,
             search_results=search_results,
-            x=(offset * 20) + 1,
+            x=lower_bound,
             y=upper_bound)
 
 @app.route("/", methods=["GET"])

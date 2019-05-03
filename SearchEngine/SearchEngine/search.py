@@ -178,6 +178,7 @@ def search(query, query_type, offset):
         print(e.pgerror)
 
     short_query = "SELECT * FROM project1.{name} LIMIT 20 OFFSET {amount};".format(name = view_name, amount = offset)
+    
     try:
         cursor.execute(short_query)
     except psycopg2.Error as e:
