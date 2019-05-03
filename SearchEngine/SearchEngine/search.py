@@ -201,7 +201,6 @@ def search(query_type, offset, query):
     rows.append(length)
         
     connection.close()
-    
     return rows
 
 if __name__ == "__main__":

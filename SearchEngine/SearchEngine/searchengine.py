@@ -27,6 +27,15 @@ def dosearch():
     previous = page - 1
     if previous < 1:
         previous = 1
+    
+    tokens = query[0]
+    
+    if len(tokens) > 1:
+        for x in range(1, len(query)):
+            tokens = tokens + "+{next_tk}".format(next_tk = query[x])
+    
+    url = "/search?query_type={x}&query={y}".format(x = qtype, y = tokens)
+
 
     search_results = search.search(qtype, offset, query)
 
@@ -40,11 +49,13 @@ def dosearch():
 
     return render_template('results.html',
             query=query,
+            query_type=qtype,
             results=length,
             search_results=search_results,
             x=lower_bound,
             y=upper_bound,
-            page=page)
+            page=page,
+            url=url)
 
 @app.route("/", methods=["GET"])
 def index():
