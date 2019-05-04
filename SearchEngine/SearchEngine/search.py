@@ -125,7 +125,7 @@ def search(query_type, offset, query):
     view_lookup_query = sql.Composed([sql.SQL("SELECT relname FROM pg_class WHERE relname NOT LIKE 'tfidf' AND relname NOT LIKE "),
                                       sql.Literal(view_name),
                                       sql.SQL("AND relkind LIKE 'm';")])
-    print(view_lookup_query)
+    print(view_lookup_query.as_string(cursor))
     try:
         cursor.execute(view_lookup_query)
     except psycopg2.Error as e:
@@ -135,18 +135,19 @@ def search(query_type, offset, query):
     for name in views:
         print(name[0])
         if name[0].strip('\)\(') != view_name:
-            delete_query = "DROP MATERIALIZED VIEW IF EXISTS project1.{var};".format(var = name[0].strip('\)\('))
-            print(delete_query)
+            var = name[0].strip('\)\(')
+            delete_query = sql.Composed([sql.SQL("DROP MATERIALIZED VIEW IF EXISTS project1."), sql.SQL(var), sql.SQL(";")])
+            print(delete_query.as_string(cursor))
             try:
                 cursor.execute(delete_query)
             except psycopg2.Error as e:
                 print(e.pgerror)
             
     """Check if materialized view already exists"""
-    check_query = "SELECT 1 FROM pg_class WHERE relname LIKE '{var}';".format(var = view_name) 
+    check_query = sql.Composed([sql.SQL("SELECT 1 FROM pg_class WHERE relname LIKE "), sql.Literal(view_name), sql.SQL(";")])
+    print(check_query.as_string(cursor))
 
     try:
-        print(check_query)
         cursor.execute(check_query)
     except psycopg2.Error as e:
         print(e.pgerror)
@@ -159,8 +160,8 @@ def search(query_type, offset, query):
         print("view was found!")
     else:
         print("view not found - creating one now")
-        materialized_query = "CREATE MATERIALIZED VIEW IF NOT EXISTS project1.{name} AS {query};".format(name = view_name, query = sql_query.as_string(cursor))
-        print(materialized_query)
+        materialized_query = sql.Composed([sql.SQL("CREATE MATERIALIZED VIEW IF NOT EXISTS project1."), sql.SQL(view_name), sql.SQL(" AS "), sql_query, sql.SQL(";")])
+        print(materialized_query.as_string(cursor))
         try:
             connection = psycopg2.connect(user="cs143",
                               password="cs143",
@@ -195,7 +196,9 @@ def search(query_type, offset, query):
     except psycopg2.Error as e:
         print(e.pgerror)
 
-    short_query = "SELECT * FROM project1.{name} LIMIT 20 OFFSET {amount};".format(name = view_name, amount = offset)
+    offset_str = str(offset)
+    short_query = sql.Composed([sql.SQL("SELECT * FROM project1."), sql.SQL(view_name), sql.SQL(" LIMIT 20 OFFSET "), sql.SQL(offset_str), sql.SQL(";")])
+    print(short_query.as_string(cursor))
     
     try:
         cursor.execute(short_query)
@@ -207,7 +210,8 @@ def search(query_type, offset, query):
     for result in row:
         rows.append(result)
 
-    length_query = "SELECT COUNT(*) FROM project1.{name};".format(name = view_name)
+    length_query = sql.Composed([sql.SQL("SELECT COUNT(*) FROM project1."), sql.SQL(view_name), sql.SQL(";")])
+    print(length_query.as_string(cursor))
     try:
         cursor.execute(length_query)
     except psycopg2.Error as e:
