@@ -4,6 +4,9 @@ import psycopg2
 import re
 import string
 import sys
+import base64
+import hashlib
+import codecs
 from psycopg2 import sql
 
 _PUNCTUATION = frozenset(string.punctuation)
@@ -103,24 +106,31 @@ def search(query_type, offset, query):
     """START RAYMOND LIN
     Make a unique materialized view name"""
     view_name = query_type
-
-    """handling punctuation marks"""
-    print(query)
-
-    no_punc_query = query.translate(str.maketrans('', '', string.punctuation))
-    print(no_punc_query)
-
-    tokens_copy = _get_tokens(no_punc_query)
-    print(tokens_copy)
     
     i = 0
-    while i != len(tokens_copy):
-        view_name += "_" + tokens_copy[i]
+    while i != len(tokens):
+        view_name += "_" + tokens[i]
         i += 1
 
     view_name += "_query"
     print("View name: {view}".format(view = view_name))
 
+    """create a hash for view_name"""
+    view_hash = base64.urlsafe_b64encode(view_name.encode('utf-8')).decode('ascii')
+    print(view_hash)
+    view_int = int.from_bytes(base64.b64decode(view_hash), 'big')
+    print(view_int)
+    
+    chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    view_int = abs(view_int)
+    result = ''
+    while view_int > 0:
+        view_int, remainder = divmod(view_int, 36)
+        result = chars[remainder] + result
+
+    view_name = 'mv' + result.lower()
+    print(view_name)
+    
     """Delete existing views that aren't equal to current view"""
     view_lookup_query = sql.Composed([sql.SQL("SELECT relname FROM pg_class WHERE relname NOT LIKE 'tfidf' AND relname NOT LIKE "),
                                       sql.Literal(view_name),
